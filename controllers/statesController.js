@@ -81,10 +81,10 @@ const getStateFunFact = async (req, res) => {
     const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
     // Get the array of fun facts from MongoDB
-    const funfactArray = stateExists.funfacts;
+    const funfactArray = stateExists?.funfacts;
 
     // If no funfacts exist, send an appropriate response
-    if (!funfactArray.length) {
+    if (!funfactArray) {
         return res.status(400).json({ "message": `No Fun Facts found for ${stateData.state}`});
     }
     
