@@ -2,8 +2,7 @@ const express = require('express');
 const router = express.Router();
 // const path = require('path');
 const statesController = require('../../controllers/statesController');
-const ROLES_LIST = require('../../config/roles_list');
-const verifyState = require('../../middleware/verifyState');
+const verifyStates = require('../../middleware/verifyStates');
 
 router.route('/')
     .get(statesController.getAllStates);
