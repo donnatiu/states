@@ -85,7 +85,7 @@ const getStateFunFact = async (req, res) => {
 
     // If no funfacts exist, send an appropriate response
     if (!funfactArray.length) {
-         return res.json({ "message": `No Fun Facts found for ${stateData.state}`});
+        return res.status(400).json({ "message": `No Fun Facts found for ${stateData.state}`});
     }
     
     // Generate a random number between 0 and array length
