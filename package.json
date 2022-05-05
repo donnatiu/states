@@ -1,13 +1,13 @@
 {
-  "name": "15tut",
+  "name": "states",
   "version": "1.0.0",
-  "description": "MongoDB tutorial",
+  "description": "Node.js REST API for US States data using both Express and MongoDB",
   "main": "server.js",
   "scripts": {
     "start": "node server",
     "dev": "nodemon server"
   },
-  "author": "Dave Gray",
+  "author": "Donna Tiu",
   "license": "ISC",
   "engines": {
     "node": "14.x"
