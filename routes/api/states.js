@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-// const path = require('path');
 const statesController = require('../../controllers/statesController');
 const verifyStates = require('../../middleware/verifyStates');
 
@@ -13,7 +12,9 @@ router.route('/:state')
 
     router.route('/:state/funfact')
     .get(verifyStates, statesController.getStateFunFact)
-    .post(verifyStates, statesController.createStateFunFact);
+    .post(verifyStates, statesController.createStateFunFact)
+    .patch(verifyStates, statesController.updateStateFunFact)
+    .delete(verifyStates, statesController.deleteStateFunFact);
 
     router.route('/:state/capital')
     .get(verifyStates, statesController.getStateCapital);

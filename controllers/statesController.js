@@ -1,75 +1,54 @@
-/* IMPORTED DATA */
-
+/*---------------------------------------------------------------------------------------
+    Imported Data
+---------------------------------------------------------------------------------------*/
 const { json } = require('express/lib/response'); 
 const State = require('../model/State');
 const statesJSONData = require('../model/states.json');
 
-
-/* GET REQUEST FUNCTIONS */
-
+/*---------------------------------------------------------------------------------------
+    GET Request Functions 
+---------------------------------------------------------------------------------------*/
 const getAllStates = async (req, res) => {
-    // Query parameter
+    // Get contig value from query parameter 
     const { contig } = req.query;
-    
-    // Holds results of query
+
+    // Store list of states from statesJSONData as array
     let statesList = statesJSONData;
 
-    // Return non-contiguous states
+    // From statesList, return ONLY noncontiguous states
     if (contig === 'false') {
         statesList = statesJSONData.filter(st => st.code === 'AK' || st.code === 'HI');
         return res.json(statesList);
     }
-
-    // Return contiguous states
+    // From statesList, return ONLY contiguous states
     if (contig === 'true') {
         statesList = statesJSONData.filter(st => st.admission_number < 49);
         return res.json(statesList);
     }
-
-    // Get all the states data we have from MongoDB
+    
+    // Get all the state data documents from MongoDB
     const mongoStates = await State.find();
 
-    /* Merge Data Method #1 */
-    // use the object spread operator to construct an object containing the properties of the 
-    // two separate objects, and then delete the redundant stateCode property from MongoDB
-    // let mergedStateData;
-    // mergedStateData = {
-    //     ...statesList,
-    //     ...mongoStates
-    // }
-    // delete mergedStateData.stateCode;
-
-    /* Merge Data Method #2 */
-    // loop through the statesList array with forEach:
-    // 1) attempt to find the state from the MongoDB states results
-    // 2) if the state is in the results, we will attach the 'funfacts' to the state object
+    // Loop through statesList array
     statesList.forEach(state => {
-        // use the array method find to compare values
+        // Attempt to find the state in MongoDB collection
         const stateExists = mongoStates.find(st => st.stateCode === state.code);
-        // if (stateExists), attach the funfacts with dot notation
-        // (spreading in the existing array to create a new one)
+        // If the state exists, attach 'funfact' property to the state object
         if(stateExists) {
             let funfactArray = stateExists.funfacts;
-            console.log(funfactArray);
-            // One or more funfacts exist
             if (funfactArray.length !== 0) {
-                // Attach the funfacts with dot notation
                 state.funfacts = [...funfactArray]; 
             }
         }
     });
-
-    // if (!mergedStateData) return res.status(204).json({ 'message': 'No states found.' });
-    
-    // send the statesList in the response
     res.json(statesList);
 }
 
 const getState = async (req, res) => {    
-    // URL parameter sent in GET request
+    // Get specified state from URL parameter
     const stateReq = req.params.state;
 
-    // Find the requested state data in the statesJSONData
+    // Find the specified state data from statesJSONData
     const stateData = statesJSONData.find(state => state.code === stateReq);
 
     // Get all the state data documents from MongoDB 
@@ -78,12 +57,10 @@ const getState = async (req, res) => {
     // Determine whether state exists in MongoDB collection
     const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
-    // Attach the funfacts from MongoDB if they exist
     if(stateExists) {
         let funfactArray = stateExists.funfacts;
-        // One or more funfacts exist
+        // If one or more funfacts exist, attach them
         if (funfactArray.length !== 0) {
-            // Attach the funfacts with dot notation
             stateData.funfacts = [...funfactArray]; 
         }
     }
@@ -91,33 +68,25 @@ const getState = async (req, res) => {
 }
 
 const getStateFunFact = async (req, res) => {
-    // Get the URL parameter
+    // Get the state from the URL parameter
     const stateReq = req.params.state;
 
-    // Find the specified state from the states.json data
+    // Find the specified state in statesJSONData
     const stateData = statesJSONData.find(state => state.code === stateReq);
     
     // Get all the state data documents from MongoDB 
     const mongoStates = await State.find();
     
-    // Determine whether state exists in MongoDB collection
+    // Determine whether specified state exists in MongoDB collection
     const stateExists = mongoStates.find(st => st.stateCode === stateData.code);
     
-    // Attach the funfacts from MongoDB if they exist
-    if(stateExists) {
-        let funfactArray = stateExists.funfacts;
-        // One or more funfacts exist
-        if (funfactArray.length !== 0) {
-            // Attach the funfacts with dot notation
-            stateData.funfacts = [...funfactArray]; 
-        }
-        else {
-            // No funfacts exist
-            return res.json({ "message": `No Fun Facts found for ${stateData.state}`});
-        }
+    // Get the array of fun facts from MongoDB
+    const funfactArray = stateExists.funfacts;
+
+    // If no funfacts exist, send an appropriate response
+    if (!funfactArray.length) {
+         return res.json({ "message": `No Fun Facts found for ${stateData.state}`});
     }
-    // Get the array of fun facts
-    const funfactArray = stateData.funfacts;
     
     // Generate a random number between 0 and array length
     let randomNum = Math.floor(Math.random()*funfactArray.length);
@@ -168,8 +137,10 @@ const getStatePopulation = (req, res) => {
     
     // Get the state name and capital
     const state = stateData.state;
-    // population as int 
-    const popInt = stateData.population;   
+
+    // Convert population to int 
+    const popInt = stateData.population;
+
     // Convert population to string and add commas
     const population = popInt.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -192,34 +163,35 @@ const getStateAdmission = (req, res) => {
     res.json({ state, admitted });
 }
 
-/* POST REQUEST FUNCTIONS */
-
+/*---------------------------------------------------------------------------------------
+    POST Request Functions 
+---------------------------------------------------------------------------------------*/
 const createStateFunFact = async (req, res) => {
-    // Verify the necessary values were passed in 
-    if(!req.body.stateCode || !req.body.funfacts) {
+    // Verify funfacts were included in request body
+    if(!req.body.funfacts) {
         return res.status(400).json({"message": "State fun facts value required"});
     }
-
-    // Request body passes in 1) stateCode and 2) array of new funfact(s) 
-    const stateCode = req.body.stateCode;
+ 
+    // Get state code from URL parameter
+    const stateCode = req.params.state;
     const funfacts = req.body.funfacts;
 
-    // Verify new funfacts are passed in as array
-    if (!(funfacts instanceof Array) || funfacts instanceof String) {   // Maybe add back later: || funfacts.length === 0
+    // Verify funfacts in request body are passed in as array
+    if (!(funfacts instanceof Array) || funfacts instanceof String) {  
         return res.status(400).json({"message": "State fun facts value must be an array"});
     }
 
     // Find the requested state in MongoDB collection
     const foundState = await State.findOne({stateCode: stateCode});
-    console.log(foundState);
 
-    // Create a new record in MongoDB collection with stateCode and funfacts array
+    // If no existing array of funfacts for requested state, create a new document w/ request body parameters
     if (!foundState) {
         try {
             const result = await State.create({
                 stateCode: stateCode,
                 funfacts: funfacts
             });
+            console.log(typeof result);
             res.status(201).json(result);
         }
         catch (err) {
@@ -228,7 +200,6 @@ const createStateFunFact = async (req, res) => {
     }
     else {
         // If state has an existing array of funfacts, ADD the new funfacts to them (do NOT delete existing funfacts)
-        // If the state does NOT have an existing array of funfacts, create a new record in MongoDB collection with stateCode and funfacts array
         let funfactArray = foundState.funfacts;
         funfactArray = funfactArray.push(...funfacts);
         const result = await foundState.save();
@@ -236,12 +207,100 @@ const createStateFunFact = async (req, res) => {
     }
 }
 
-/* PATCH REQUEST FUNCTIONS */
+/*---------------------------------------------------------------------------------------
+    PATCH Request Functions 
+---------------------------------------------------------------------------------------*/
+const updateStateFunFact = async (req, res) => {
+    // Verify index value was included in request body 
+    if(!req.body.index) {
+        return res.status(400).json({"message": "State fun fact index value required"});
+    }
+    // Verify funfact value was included in request body (must be String type)
+    if(!req.body.funfact || req.body.funfact instanceof Array) {
+        return res.status(400).json({"message": "State fun fact value required"});
+    }
 
+    // Subtract 1 from index value to match up with correct index of the funfacts array in MongoDB
+    const index = parseInt(req.body.index) - 1; 
+    
+    // Get requested state code from URL parameter
+    const stateCode = req.params.state;
+    
+    // Get correspondning state name from statesJSONData (to use for invalid input responses)
+    const stateData = statesJSONData.find(state => state.code === stateCode);
+    const stateName = stateData.state;
+    
+    // Get funfact from request body to use to update existing funfact
+    const funfact = req.body.funfact;
 
-/* DELETE REQUEST FUNCTIONS */
+    // Find the requested state in MongoDB collection
+    const foundState = await State.findOne({stateCode: stateCode});
 
+    // Get funfacts array for requested state
+    let funfactArray = foundState.funfacts;
 
+    // If no funfacts exist for requested state, send an appropriate response
+    if(!funfactArray.length) {
+        return res.status(400).json({"message": `No Fun Facts found for ${stateName}`});
+    }
+    // If no funfacts exist at the specified index, send an appropriate response
+    if(!funfactArray[index]) {
+        return res.status(400).json({"message": `No Fun Fact found at that index for ${stateName}`});
+    }
+
+    // Set the element at the specified index to the new value
+    funfactArray[index] = funfact;
+
+    // Save the record and respond with the result received from the model
+    const result = await foundState.save();
+    res.status(201).json(result);
+}
+
+/*---------------------------------------------------------------------------------------
+    DELETE Request Functions 
+---------------------------------------------------------------------------------------*/
+const deleteStateFunFact = async (req, res) => {
+    // Verify index value was included in request body 
+    if(!req.body.index) {
+        return res.status(400).json({"message": "State fun fact index value required"});
+    }
+    
+    // Subtract 1 from index value to match up with correct index of the funfacts array in MongoDB
+    const index = parseInt(req.body.index) - 1;
+
+    // Get requested state code from URL parameter
+    const stateCode = req.params.state;
+
+    // Get correspondning state name from statesJSONData (to use for invalid input responses)
+    const stateData = statesJSONData.find(state => state.code === stateCode);
+    const stateName = stateData.state;
+    
+    // Find the requested state in MongoDB collection
+    const foundState = await State.findOne({stateCode: stateCode});
+
+    // Get funfacts array for requested state
+    let funfactArray = foundState.funfacts;
+
+    // If no funfacts exist for requested state, send an appropriate response
+    if(!funfactArray.length) {
+        return res.status(400).json({"message": `No Fun Facts found for ${stateName}`});
+    }
+    // If no funfacts exist at the specified index, send an appropriate response
+    if(!funfactArray[index]) {
+        return res.status(400).json({"message": `No Fun Fact found at that index for ${stateName}`});
+    }
+
+    // Splice and remove specified index from funfacts
+    funfactArray.splice(index, 1);
+
+    // Save the record and respond with the result received from the model
+    const result = await foundState.save();
+    res.status(201).json(result); 
+}
+
+/*---------------------------------------------------------------------------------------
+    Exported Functions 
+---------------------------------------------------------------------------------------*/
 module.exports = {
     getAllStates, 
     getState, 
@@ -250,5 +309,7 @@ module.exports = {
     getStateNickname, 
     getStatePopulation,
     getStateAdmission,
-    createStateFunFact
+    createStateFunFact,
+    updateStateFunFact,
+    deleteStateFunFact
 }
