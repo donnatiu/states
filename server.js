@@ -1,42 +1,38 @@
-// Load .env configuration
+// Import .env file
 require('dotenv').config();
 
+// Imports
 const express = require('express');
 const app = express();
 const path = require('path');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const connectDB = require('./config/dbConn');
 
-// Port to bind the server to
-const PORT = process.env.PORT || 80;
+// Establish Port
+const PORT = process.env.PORT || 3500;
 
-// Initiate database connection. This would take a while,
-// so it is best started as soon as possible.
-mongoose.connect(process.env.DATABASE_URI, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true
-});
+// Connect to MongoDB
+connectDB();
 
-// CORS
-app.use(cors({
-    origin: (origin, callback) => {
-        callback(null, true);
-    },
-    optionsSuccessStatus: 200
-}));
+// Cross Origin Resource Sharing
+app.use(cors());
 
-// Pre-processing middleware
+// Built-in middleware to handle urlencoded form data
 app.use(express.urlencoded({ extended: false }));
+
+// built-in middleware for json 
 app.use(express.json());
 
-// Serve static files from the ./public directory.
+//serve static files
 app.use('/', express.static(path.join(__dirname, '/public')));
 
 // Routes
-app.use('/', require('./routes/root'))
-app.use('/states', require('./routes/states'))
+app.use('/', require('./routes/root'));
+app.use('/states', require('./routes/api/states'));
 
-// 404 Handler
+
+// Catch-all to serve a 404 status if the route does not exist
 app.all('*', (req, res) => {
     res.status(404);
     if (req.accepts('html')) {
@@ -48,7 +44,8 @@ app.all('*', (req, res) => {
     }
 });
 
-// Setup complete and DB connection established - initialize server
-mongoose.connection.once('connected', () => {
+// Listen for requests ONLY if successfully connected (open event)
+mongoose.connection.once('open', () => {
+    console.log('Connected to MongoDB');
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
