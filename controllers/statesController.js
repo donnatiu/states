@@ -237,10 +237,10 @@ const updateStateFunFact = async (req, res) => {
     const foundState = await State.findOne({stateCode: stateCode});
 
     // Get funfacts array for requested state
-    let funfactArray = foundState.funfacts;
+    let funfactArray = foundState?.funfacts;
 
     // If no funfacts exist for requested state, send an appropriate response
-    if(!funfactArray.length) {
+    if(!funfactArray) {
         return res.status(400).json({"message": `No Fun Facts found for ${stateName}`});
     }
     // If no funfacts exist at the specified index, send an appropriate response
@@ -279,10 +279,10 @@ const deleteStateFunFact = async (req, res) => {
     const foundState = await State.findOne({stateCode: stateCode});
 
     // Get funfacts array for requested state
-    let funfactArray = foundState.funfacts;
+    let funfactArray = foundState?.funfacts;
 
     // If no funfacts exist for requested state, send an appropriate response
-    if(!funfactArray.length) {
+    if(!funfactArray) {
         return res.status(400).json({"message": `No Fun Facts found for ${stateName}`});
     }
     // If no funfacts exist at the specified index, send an appropriate response
