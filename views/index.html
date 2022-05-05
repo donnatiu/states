@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-
-<body>
-    <h1>Index</h1>
-</body>
-
+	<head>
+		<meta charset="UTF-8">
+		<title>Index</title>
+		<link rel="stylesheet" href="css/style.css" />
+	</head>
+	<body>
+		<h1>States API Index Page</h1>
+		<p>
+            REST API available at <a href="./states">/states</a>
+            <br>
+            The following routes are supported:
+            <ul>
+                <li><b>/states</b> [GET] (Provides access to all state data)</li>
+                <li><b>/states/:state</b> [GET] (Provides access to a specific state)</li>
+                <li><b>/states/:state/funfact</b> [GET, POST, PATCH, DELETE] (Provides access to a specific state's fun facts)</li>
+                <li><b>/states/:state/:property</b> [GET] (Provides access to a specific state's specific properties)</li>
+            </ul>
+        </p>
+	</body>
 </html>
