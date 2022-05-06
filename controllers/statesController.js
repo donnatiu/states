@@ -1,15 +1,11 @@
 
-/*---------------------------------------------------------------------------------------
-                                    Imported Data
----------------------------------------------------------------------------------------*/
+/*Imports*/
 
 const { json } = require('express/lib/response'); 
 const State = require('../model/State');
 const statesJSONData = require('../model/states.json');
 
-/*---------------------------------------------------------------------------------------
-                                GET Request Functions 
----------------------------------------------------------------------------------------*/
+/*GET*/
 
 /* The REST API will provide responses to the following GET requests: */
 
@@ -211,9 +207,7 @@ const getStateAdmission = (req, res) => {
     res.json({ state, admitted });
 }
 
-/*---------------------------------------------------------------------------------------
-                                    POST Request Functions 
----------------------------------------------------------------------------------------*/
+/*POST*/
 
 /* The REST API will provide responses to the following POST request: */
 
@@ -263,9 +257,7 @@ const createStateFunFact = async (req, res) => {
     }
 }
 
-/*---------------------------------------------------------------------------------------
-                                    PATCH Request Functions 
----------------------------------------------------------------------------------------*/
+/*PATCH*/
 
 /* The REST API will provide responses to the following PATCH request: */
 
@@ -319,9 +311,7 @@ const updateStateFunFact = async (req, res) => {
     res.status(201).json(result);
 }
 
-/*---------------------------------------------------------------------------------------
-                                DELETE Request Functions 
----------------------------------------------------------------------------------------*/
+/*DELETE*/
 
 /* The REST API will provide responses to the following DELETE request: */
 
@@ -368,9 +358,7 @@ const deleteStateFunFact = async (req, res) => {
     res.status(201).json(result); 
 }
 
-/*---------------------------------------------------------------------------------------
-                                    Exported Functions 
----------------------------------------------------------------------------------------*/
+/*Exports*/
 module.exports = {
     getAllStates, 
     getState, 
