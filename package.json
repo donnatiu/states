@@ -1,7 +1,7 @@
 {
   "name": "states",
   "version": "1.0.0",
-  "description": "INF653 Final Project",
+  "description": "Node.js REST API for US States data using both Express and MongoDB",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
